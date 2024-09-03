@@ -111,4 +111,14 @@ public class ApiController {
         return !me.isEmpty() ? ResponseEntity.ok(me) : ResponseEntity.notFound().build();
     }
 
+    @DeleteMapping("/maintenance/{id}")
+    public ResponseEntity<MaintenanceEntity> deleteMaintenance(@PathVariable(value="id") Long id) {
+        UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        MaintenanceEntity me1 = maintenanceService.getMaintenanceById(id).orElse(null);
+        if (me1 == null) return ResponseEntity.notFound().build();
+        if (!vehicleService.isVehicleOwner(me1.getVehicle().getVin(), userPrincipal.getUsername())) return ResponseEntity.badRequest().build();
+        Optional<MaintenanceEntity> me2 = maintenanceService.deleteMaintenance(id);
+        return me2.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
 }
