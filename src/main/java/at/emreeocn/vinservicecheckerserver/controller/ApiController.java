@@ -10,6 +10,7 @@ import at.emreeocn.vinservicecheckerserver.security.UserPrincipal;
 import at.emreeocn.vinservicecheckerserver.service.MaintenanceService;
 import at.emreeocn.vinservicecheckerserver.service.VehicleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -49,6 +50,7 @@ public class ApiController {
      */
     @GetMapping("/vin/list")
     public ResponseEntity<List<VehicleResponse>> getVehicles() {
+        if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof String) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<VehicleResponse> ve = vehicleService.getVehiclesByOwner(userPrincipal.getUser());
         return !ve.isEmpty() ? ResponseEntity.ok(ve) : ResponseEntity.notFound().build();
@@ -83,6 +85,7 @@ public class ApiController {
      */
     @PostMapping("/maintenance")
     public ResponseEntity<MaintenanceEntity> createMaintenance(@RequestBody MaintenanceRequest maintenanceRequest) {
+        if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof String) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String vin = maintenanceRequest.getVin();
 
@@ -113,6 +116,7 @@ public class ApiController {
 
     @DeleteMapping("/maintenance/{id}")
     public ResponseEntity<MaintenanceEntity> deleteMaintenance(@PathVariable(value="id") Long id) {
+        if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof String) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         MaintenanceEntity me1 = maintenanceService.getMaintenanceById(id).orElse(null);
         if (me1 == null) return ResponseEntity.notFound().build();
