@@ -31,13 +31,13 @@ public class MaintenanceService {
             maintenance.setMileage(maintenanceEntity.getMileage());
             maintenance.setCost(maintenanceEntity.getCost());
             return maintenance;
-        }).toList();
+        }).toList().stream().sorted((o1, o2) -> o2.getDate().compareTo(o1.getDate())).toList();
     }
 
     public MaintenanceEntity addMaintenance(MaintenanceRequest maintenanceRequest, String vin) {
-        if (!vehicleService.vinExists(vin)) return null;
         MaintenanceEntity me = new MaintenanceEntity();
         me.setVehicle(vehicleService.getVehicleEntityByVin(vin).orElse(null));
+        me.setDate(maintenanceRequest.getDate());
         me.setCategory(maintenanceRequest.getCategory());
         me.setDescription(maintenanceRequest.getDescription());
         me.setMileage(maintenanceRequest.getMileage());

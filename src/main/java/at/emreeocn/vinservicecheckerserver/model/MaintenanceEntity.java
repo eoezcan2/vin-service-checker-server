@@ -20,7 +20,6 @@ public class MaintenanceEntity {
     @ManyToOne
     private VehicleEntity vehicle;
 
-    @Enumerated(EnumType.STRING)
     private MaintenanceCategory category;
 
     private String description;

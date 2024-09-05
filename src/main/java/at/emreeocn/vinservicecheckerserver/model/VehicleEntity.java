@@ -23,7 +23,6 @@ public class VehicleEntity {
 
     private String name;
 
-    @Enumerated(EnumType.STRING)
     private VehicleType type;
 
     public String getVin() {

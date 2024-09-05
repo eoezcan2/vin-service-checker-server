@@ -1,17 +1,15 @@
 package at.emreeocn.vinservicecheckerserver.controller;
 
-import at.emreeocn.vinservicecheckerserver.dto.request.MaintenanceRequest;
 import at.emreeocn.vinservicecheckerserver.dto.Vehicle;
+import at.emreeocn.vinservicecheckerserver.dto.request.MaintenanceRequest;
 import at.emreeocn.vinservicecheckerserver.dto.response.MaintenanceResponse;
 import at.emreeocn.vinservicecheckerserver.dto.response.VehicleResponse;
 import at.emreeocn.vinservicecheckerserver.model.MaintenanceEntity;
 import at.emreeocn.vinservicecheckerserver.model.VehicleEntity;
-import at.emreeocn.vinservicecheckerserver.security.JwtService;
 import at.emreeocn.vinservicecheckerserver.security.UserPrincipal;
 import at.emreeocn.vinservicecheckerserver.service.MaintenanceService;
 import at.emreeocn.vinservicecheckerserver.service.VehicleService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -51,19 +49,17 @@ public class ApiController {
      */
     @GetMapping("/vin/list")
     public ResponseEntity<List<String>> getVehicles() {
-        if (JwtService.checkTokenRequest()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<VehicleResponse> ve = vehicleService.getVehiclesByOwner(userPrincipal.getUser());
         List <String> vinList = vehicleService.getVehiclesByOwner(userPrincipal.getUser()).stream().map(VehicleResponse::getVin).toList();
-        return !vinList.isEmpty() ? ResponseEntity.ok(vinList) : ResponseEntity.notFound().build();
+        return ResponseEntity.ok(vinList);
     }
 
     @GetMapping("/vin/list/data")
     public ResponseEntity<List<VehicleResponse>> getVehiclesData() {
-        if (JwtService.checkTokenRequest()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<VehicleResponse> ve = vehicleService.getVehiclesByOwner(userPrincipal.getUser());
-        return !ve.isEmpty() ? ResponseEntity.ok(ve) : ResponseEntity.notFound().build();
+        return ResponseEntity.ok(ve);
     }
 
     /**
@@ -95,12 +91,11 @@ public class ApiController {
      */
     @PostMapping("/maintenance")
     public ResponseEntity<MaintenanceEntity> createMaintenance(@RequestBody MaintenanceRequest maintenanceRequest) {
-        if (JwtService.checkTokenRequest()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String vin = maintenanceRequest.getVin();
 
         if (!vehicleService.vinExists(vin)) return ResponseEntity.notFound().build();
-        if (vehicleService.isVehicleOwner(vin, userPrincipal.getUsername())) return ResponseEntity.badRequest().build();
+        if (!vehicleService.isVehicleOwner(vin, userPrincipal.getUser().getId())) return ResponseEntity.badRequest().build();
         if (maintenanceRequest.getMileage() < 0 || maintenanceRequest.getCost() < 0) return ResponseEntity.badRequest().build();
         if (maintenanceRequest.getCategory().toString().isEmpty()) return ResponseEntity.badRequest().build();
 
@@ -121,16 +116,15 @@ public class ApiController {
         if(ve == null) return ResponseEntity.notFound().build();
 
         List<MaintenanceResponse> me = maintenanceService.getMaintenancesByVehicle(ve);
-        return !me.isEmpty() ? ResponseEntity.ok(me) : ResponseEntity.notFound().build();
+        return ResponseEntity.ok(me);
     }
 
     @DeleteMapping("/maintenance/{id}")
     public ResponseEntity<MaintenanceEntity> deleteMaintenance(@PathVariable(value="id") Long id) {
-        if (JwtService.checkTokenRequest()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         MaintenanceEntity me1 = maintenanceService.getMaintenanceById(id).orElse(null);
         if (me1 == null) return ResponseEntity.notFound().build();
-        if (!vehicleService.isVehicleOwner(me1.getVehicle().getVin(), userPrincipal.getUsername())) return ResponseEntity.badRequest().build();
+        if (!vehicleService.isVehicleOwner(me1.getVehicle().getVin(), userPrincipal.getUser().getId())) return ResponseEntity.badRequest().build();
         Optional<MaintenanceEntity> me2 = maintenanceService.deleteMaintenance(id);
         return me2.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }

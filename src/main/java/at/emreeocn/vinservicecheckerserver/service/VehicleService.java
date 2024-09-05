@@ -53,9 +53,9 @@ public class VehicleService {
         return vin.length() == 17;
     }
 
-    public boolean isVehicleOwner(String vin, String username) {
+    public boolean isVehicleOwner(String vin, Long id) {
         Optional<VehicleEntity> ve = vehicleRepository.findVehicleEntityByVin(vin);
-        return ve.isPresent() && ve.get().getName().equals(username);
+        return ve.isPresent() && ve.get().getOwner().getId().equals(id);
     }
 
     public List<VehicleResponse> getVehiclesByOwner(UserEntity user) {
