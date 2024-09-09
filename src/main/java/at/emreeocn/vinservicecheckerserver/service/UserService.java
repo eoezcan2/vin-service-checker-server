@@ -1,5 +1,6 @@
 package at.emreeocn.vinservicecheckerserver.service;
 
+import at.emreeocn.vinservicecheckerserver.dto.request.AuthRequest;
 import at.emreeocn.vinservicecheckerserver.dto.request.LoginUserRequest;
 import at.emreeocn.vinservicecheckerserver.model.UserEntity;
 import at.emreeocn.vinservicecheckerserver.repository.UserRepository;
@@ -25,9 +26,12 @@ public class UserService {
 
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
-    public void register(UserEntity user) {
+    public String register(UserEntity user) {
+        if (existsByUsername(user.getUsername())) return "Username already exists";
+        if (existsByEmail(user.getEmail())) return "Email already exists";
         user.setPassword(encoder.encode(user.getPassword()));
         userRepository.save(user);
+        return null;
     }
 
     public boolean existsByUsername(String username) {
@@ -42,7 +46,7 @@ public class UserService {
         return userRepository.findByUsername(username);
     }
 
-    public String verify(LoginUserRequest body) {
+    public String verify(AuthRequest body) {
         Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(body.getUsername(), body.getPassword()));
         if (auth.isAuthenticated()) return jwtService.generateToken(body.getUsername());
         return "Failed";

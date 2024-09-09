@@ -1,6 +1,6 @@
 package at.emreeocn.vinservicecheckerserver.dto.request;
 
-public class LoginUserRequest {
+public class LoginUserRequest implements AuthRequest {
 
     private String username;
     private String password;

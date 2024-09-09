@@ -31,11 +31,13 @@ public class UserController {
         user.setUsername(body.getUsername());
         user.setEmail(body.getEmail());
         user.setPassword(body.getPassword());
-        userService.register(user);
+        String status = userService.register(user);
+        if (status != null) return ResponseEntity.badRequest().build();
 
         RegisterUserResponse response = new RegisterUserResponse();
         response.setUsername(body.getUsername());
         response.setEmail(body.getEmail());
+        response.setToken(userService.verify(body));
         return ResponseEntity.ok(response);
     }
 
