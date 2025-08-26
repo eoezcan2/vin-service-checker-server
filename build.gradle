@@ -27,6 +27,12 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+jar {
+    manifest {
+        attributes 'Main-Class': 'at.emreeocn.vinservicecheckerserver.VinServiceCheckerServerApplication'
+    }
+}
+
 tasks.named('test') {
     useJUnitPlatform()
 }
