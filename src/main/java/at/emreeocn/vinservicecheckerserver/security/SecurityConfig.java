@@ -36,12 +36,18 @@ public class SecurityConfig {
 				.cors(Customizer.withDefaults())
 				.authorizeHttpRequests(authorizeRequests ->
 						authorizeRequests
-								.requestMatchers("/api/vin/*").permitAll()		// No auth needed for API, because everyone can look up service book
-								.requestMatchers("/api/vin/*/data").permitAll()	// No auth needed for API, because everyone can look up service book
-								.requestMatchers("/api/maintenance/*").permitAll()	// No auth needed for API, because everyone can look up service book
-								.requestMatchers("/user/register").permitAll()	// No auth needed for registration
-								.requestMatchers("/user/login").permitAll()		// No auth needed for login
-								.anyRequest().authenticated()						// Any other request needs auth
+								// Allow OPTIONS requests for CORS preflight
+								.requestMatchers("OPTIONS", "/**").permitAll()
+								// Public endpoints for vehicle lookup (read-only)
+								.requestMatchers("/api/vin/{vin}").permitAll()
+								.requestMatchers("/api/vin/{vin}/data").permitAll()
+								.requestMatchers("/api/maintenance/{vin}").permitAll()
+								// Authentication endpoints
+								.requestMatchers("/user/register").permitAll()
+								.requestMatchers("/user/login").permitAll()
+								// All other endpoints require authentication
+								.requestMatchers("/api/**").authenticated()
+								.anyRequest().authenticated()
 				)
 				.sessionManagement(sessionManagement ->
 						sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -56,7 +62,12 @@ public class SecurityConfig {
 		return new WebMvcConfigurer() {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
-				registry.addMapping("/**").allowedOrigins("*").allowedMethods("GET", "POST", "PUT", "DELETE");
+				registry.addMapping("/**")
+					.allowedOriginPatterns("http://localhost:3000", "http://localhost:8080", "http://localhost:8081", "https://yourdomain.com")
+					.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+					.allowedHeaders("*")
+					.allowCredentials(true)
+					.maxAge(3600);
 			}
 		};
 	}

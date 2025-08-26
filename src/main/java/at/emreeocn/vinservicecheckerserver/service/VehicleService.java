@@ -45,12 +45,43 @@ public class VehicleService {
         vehicleRepository.save(vehicle);
     }
 
+    public VehicleEntity createVehicleWithOwner(Vehicle vehicle, UserEntity owner) {
+        VehicleEntity vehicleEntity = new VehicleEntity();
+        vehicleEntity.setVin(sanitizeVin(vehicle.getVin()));
+        vehicleEntity.setName(sanitizeString(vehicle.getName()));
+        vehicleEntity.setType(vehicle.getType());
+        vehicleEntity.setOwner(owner);
+        return vehicleRepository.save(vehicleEntity);
+    }
+
+    private String sanitizeVin(String vin) {
+        if (vin == null) return null;
+        return vin.trim().toUpperCase();
+    }
+
+    private String sanitizeString(String input) {
+        if (input == null) return null;
+        return input.trim().replaceAll("[<>\"']", "");
+    }
+
+    public VehicleResponse createVehicleResponse(VehicleEntity vehicleEntity) {
+        VehicleResponse vehicleResponse = new VehicleResponse();
+        vehicleResponse.setVin(vehicleEntity.getVin());
+        vehicleResponse.setName(vehicleEntity.getName());
+        vehicleResponse.setType(vehicleEntity.getType());
+        return vehicleResponse;
+    }
+
     public boolean vinExists(String vin) {
         return vehicleRepository.findVehicleEntityByVin(vin).isPresent();
     }
 
     public boolean vinValid(String vin) {
-        return vin.length() == 17;
+        if (vin == null || vin.length() != 17) {
+            return false;
+        }
+        // VIN should only contain alphanumeric characters (excluding I, O, Q)
+        return vin.matches("^[A-HJ-NPR-Z0-9]{17}$");
     }
 
     public boolean isVehicleOwner(String vin, Long id) {

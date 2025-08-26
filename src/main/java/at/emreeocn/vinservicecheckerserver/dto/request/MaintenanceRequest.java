@@ -1,16 +1,33 @@
 package at.emreeocn.vinservicecheckerserver.dto.request;
 
 import at.emreeocn.vinservicecheckerserver.dto.MaintenanceCategory;
+import jakarta.validation.constraints.*;
 
 import java.util.Date;
 
 public class MaintenanceRequest {
 
+    @NotBlank(message = "VIN is required")
+    @Pattern(regexp = "^[A-HJ-NPR-Z0-9]{17}$", message = "VIN must be exactly 17 characters and contain only valid characters")
     private String vin;
+    
+    @NotNull(message = "Date is required")
+    @PastOrPresent(message = "Date cannot be in the future")
     private Date date;
+    
+    @NotNull(message = "Category is required")
     private MaintenanceCategory category;
+    
+    @NotBlank(message = "Description is required")
+    @Size(min = 1, max = 500, message = "Description must be between 1 and 500 characters")
     private String description;
+    
+    @Min(value = 0, message = "Mileage cannot be negative")
+    @Max(value = 999999, message = "Mileage cannot exceed 999,999")
     private int mileage;
+    
+    @DecimalMin(value = "0.0", message = "Cost cannot be negative")
+    @DecimalMax(value = "999999.99", message = "Cost cannot exceed 999,999.99")
     private float cost;
 
     public Date getDate() {
