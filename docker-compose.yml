@@ -1,16 +1,30 @@
+version: '3.8'
+
 services:
-#  app:
-#    build: .
-#    ports:
-#      - "8080:8080"
-#    depends_on:
-#      - db
-#    environment:
-#      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/postgres
-#      SPRING_DATASOURCE_USERNAME: root
-#      SPRING_DATASOURCE_PASSWORD: admin
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/postgres
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      JWT_SECRET: ${JWT_SECRET:-f8Dhll3j4ka8fnf7834dj38fhkalaofj37fh8ajamf83kka82nmlla872hbf}
+    networks:
+      - vin-service-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
   db:
-    image: postgres:10-alpine
+    image: postgres:15-alpine
     restart: always
     ports:
       - "5432:5432"
@@ -18,8 +32,29 @@ services:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - vin-service-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   adminer:
-    image: adminer
+    image: adminer:latest
     restart: always
     ports:
       - "5050:8080"
+    depends_on:
+      - db
+    networks:
+      - vin-service-network
+
+networks:
+  vin-service-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
