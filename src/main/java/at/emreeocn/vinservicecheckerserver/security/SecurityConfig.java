@@ -42,9 +42,10 @@ public class SecurityConfig {
 								.requestMatchers("/api/vin/{vin}").permitAll()
 								.requestMatchers("/api/vin/{vin}/data").permitAll()
 								.requestMatchers("/api/maintenance/{vin}").permitAll()
-								// Authentication endpoints
-								.requestMatchers("/user/register").permitAll()
-								.requestMatchers("/user/login").permitAll()
+												// Authentication endpoints
+				.requestMatchers("/user/register").permitAll()
+				.requestMatchers("/user/login").permitAll()
+				.requestMatchers("/user/create-test-user").permitAll()
 								// All other endpoints require authentication
 								.requestMatchers("/api/**").authenticated()
 								.anyRequest().authenticated()
