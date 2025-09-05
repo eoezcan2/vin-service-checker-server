@@ -3,6 +3,7 @@ package at.emreeocn.vinservicecheckerserver.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -36,16 +37,16 @@ public class SecurityConfig {
 				.cors(Customizer.withDefaults())
 				.authorizeHttpRequests(authorizeRequests ->
 						authorizeRequests
-								// Allow OPTIONS requests for CORS preflight
-								.requestMatchers("OPTIONS", "/**").permitAll()
+								// Allow all OPTIONS requests for CORS preflight
+								.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 								// Public endpoints for vehicle lookup (read-only)
 								.requestMatchers("/api/vin/{vin}").permitAll()
 								.requestMatchers("/api/vin/{vin}/data").permitAll()
 								.requestMatchers("/api/maintenance/{vin}").permitAll()
-												// Authentication endpoints
-				.requestMatchers("/user/register").permitAll()
-				.requestMatchers("/user/login").permitAll()
-				.requestMatchers("/user/create-test-user").permitAll()
+								// Authentication endpoints
+								.requestMatchers("/user/register").permitAll()
+								.requestMatchers("/user/login").permitAll()
+								.requestMatchers("/user/create-test-user").permitAll()
 								// All other endpoints require authentication
 								.requestMatchers("/api/**").authenticated()
 								.anyRequest().authenticated()
@@ -58,26 +59,7 @@ public class SecurityConfig {
 				.build();
 	}
 
-	@Bean
-	public WebMvcConfigurer corsConfigurer() {
-		return new WebMvcConfigurer() {
-			@Override
-			public void addCorsMappings(CorsRegistry registry) {
-				registry.addMapping("/**")
-					.allowedOriginPatterns(
-						"http://localhost",
-						"http://localhost:*",
-						"http://127.0.0.1",
-						"http://127.0.0.1:*",
-						"https://yourdomain.com"
-					)
-					.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-					.allowedHeaders("*")
-					.allowCredentials(true)
-					.maxAge(3600);
-			}
-		};
-	}
+
 
 	@Bean
 	public AuthenticationProvider authenticationProvider() {
